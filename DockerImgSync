@@ -1,0 +1,46 @@
+#!/bin/bash
+# By Sergio Arroyo Pastor
+
+red () {
+	echo -e "\e[31m $1 \e[0m"
+}
+
+yellow () {
+	echo -e "\e[33m $1 \e[0m"
+}
+
+green () {
+	echo -e "\e[32m $1 \e[0m"
+}
+
+errors () {
+	red "$1"
+	exit 1
+}
+
+IMAGE=$1
+REGISTRY=$2
+NODES=$(docker node ls --format '{{.Hostname}}' | tail -n +2)
+
+if [ -z $IMAGE ] || [ -z $REGISTRY ];
+then
+	red "- Please add an image and a repository -"
+	yellow "- Script usage:"
+	yellow "- ./DockerImgSync <Image_name:tag> <Repository_name>"
+	yellow "	->Example: ./DockerImgSync myregistry:4005/myimage:tag myregistry:4005"
+	exit 1
+
+else
+
+docker login $REGISTRY 
+
+docker push $IMAGE &> /dev/null && \
+green "Image pushed to repository successfuly" || \
+errors "There was a problem pushing the image"
+
+for i in $NODES; do
+        ssh $i "docker login $REGISTRY ; docker pull $IMAGE > /dev/null" && \
+	green "Image downloaded successfuly" || \
+	errors "There was a problem downloading the image"
+done
+fi
