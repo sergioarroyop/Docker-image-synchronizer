@@ -1,6 +1,6 @@
 # Docker Image Synchronizer
 
-Bash script for synchronizing an image across the all swarm nodes.
+Bash script for synchronizing an image across all the swarm nodes.
 
 # HOW IT WORKS? 🔩
 
